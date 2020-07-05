@@ -9,6 +9,9 @@ class Event(models.Model):
         ('webcast', 'Онлайн-вебинар'),
     )
 
+    class Meta:
+        ordering = ['id']
+
     title = models.CharField(max_length=500)
     event_type = models.CharField(max_length=50, choices=EVENT_TYPE_CHOICES, default='meeting')
     start_date = models.DateTimeField()
