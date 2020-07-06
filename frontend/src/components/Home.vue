@@ -1,6 +1,9 @@
 <template>
   <div>
     <h2>{{ status }}</h2>
+    <button :disabled="!prevPage" @click="fetchEvents(prevPage)">Previous</button>
+    <button :disabled="!nextPage" @click="fetchEvents(nextPage)">Next</button>
+    <div class='top'></div>
     <table>
       <thead>
         <tr>
@@ -56,7 +59,9 @@ export default {
       status: '',
       events: [],
       currentEvent: {},
-      api_url: 'http://127.0.0.1:8000/api/events/'
+      api_url: 'http://127.0.0.1:8000/api/events/',
+      nextPage: null,
+      prevPage: null
     }
   },
 
@@ -73,14 +78,17 @@ export default {
         this.status = ''
       }
     },
-    async fetchEvents () {
-      const response = await fetch(this.api_url, {
+    async fetchEvents (url = this.api_url) {
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           Authorization: 'Token d38de5854590cd00564e4b0bf4a4b40ec981d336'
         }
       })
-      this.events = await response.json()
+      const { results, next, previous } = await response.json()
+      this.events = results
+      this.nextPage = next
+      this.prevPage = previous
       this.setStatus(response, 200)
     },
     async addEvent () {
@@ -151,10 +159,14 @@ th {
 
 button {
   padding: 3px 10px;
-  margin: 0 10px;
+  margin: 0 5px;
 }
 
 h2 {
   color: red;
+}
+
+.top{
+  padding: 20px;
 }
 </style>

@@ -4,12 +4,14 @@ from rest_framework.authentication import BasicAuthentication, TokenAuthenticati
 from .models import Event
 from .serializers import EventSerializer
 from .permissions import IsOwner
+from .paginators import EventsSetPagination
 
 
 class EventViewSet(ModelViewSet):
     serializer_class = EventSerializer
     authentication_classes = [BasicAuthentication, TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsOwner]
+    pagination_class = EventsSetPagination
 
     def get_queryset(self):
         return self.request.user.events.all()

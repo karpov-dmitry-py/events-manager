@@ -21,5 +21,3 @@ class Event(models.Model):
     def __str__(self):
         return f'<id:{self.id}> {self.title} ({self.owner}, начало: {self.start_date})'
 
-    class Meta:
-        ordering = ['start_date']
