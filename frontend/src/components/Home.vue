@@ -29,7 +29,7 @@
     </table>
     <br><br><br>
     <form>
-      <input size=150 placeholder='title' v-model='currentEvent.title'><br><br>
+      <input size=130 placeholder='title' v-model='currentEvent.title'><br><br>
       <p><select size=4 placeholder='event type' v-model='currentEvent.event_type'>
       <option disabled>event type</option>
       <option value='call' selected>call</option>
@@ -65,6 +65,14 @@ export default {
   },
 
   methods: {
+    async setStatus (response, expectedStatus) {
+      const { status } = response
+      if (status !== expectedStatus) {
+        this.status = `HTTP status: ${status}: ` + JSON.stringify(await response.json())
+      } else {
+        this.status = ''
+      }
+    },
     async fetchEvents () {
       const response = await fetch(this.api_url, {
         method: 'GET',
@@ -73,6 +81,7 @@ export default {
         }
       })
       this.events = await response.json()
+      this.setStatus(response, 200)
     },
     async addEvent () {
       const response = await fetch(this.api_url, {
@@ -84,11 +93,8 @@ export default {
         },
         body: JSON.stringify(this.currentEvent)
       })
-      if (response.status !== 201) {
-        this.status = JSON.stringify(await response.json())
-      }
-      this.status = ''
       await this.fetchEvents()
+      this.setStatus(response, 201)
     },
     async deleteEvent (event) {
       const { id } = event
@@ -100,11 +106,8 @@ export default {
           Authorization: 'Token d38de5854590cd00564e4b0bf4a4b40ec981d336'
         }
       })
-      if (response.status !== 204) {
-        this.status = JSON.stringify(await response.json())
-      }
-      this.status = ''
       await this.fetchEvents()
+      this.setStatus(response, 204)
     },
     async editEvent (event) {
       this.currentEvent = event
@@ -120,11 +123,8 @@ export default {
         },
         body: JSON.stringify(this.currentEvent)
       })
-      if (response.status !== 200) {
-        this.status = JSON.stringify(await response.json())
-      }
-      this.status = ''
       await this.fetchEvents()
+      this.setStatus(response, 200)
     }
   }
 }
@@ -144,8 +144,13 @@ td, th{
   margin: 0 10px;
   text-align: left;
 }
+
+th {
+  background: lightblue;
+}
+
 button {
-  padding: 3px 20px;
+  padding: 3px 10px;
   margin: 0 10px;
 }
 
