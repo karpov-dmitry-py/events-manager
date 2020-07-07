@@ -1,8 +1,19 @@
 <template>
   <div>
-    <h2>{{ status }}</h2>
     <button :disabled="!prevPage" @click="fetchEvents(prevPage)">Previous</button>
     <button :disabled="!nextPage" @click="fetchEvents(nextPage)">Next</button>
+    <div class='top'></div>
+    <div class='filters'>
+      <label>Filters:</label>
+      <select class='filters' v-model='date_filter'>
+        <option value=0 selected>all</option>
+        <option value=30>last 30 days</option>
+        <option value=7>last 7 days</option>
+        <option value=1>since yesterday</option>
+     </select>
+      <input class='filters' placeholder='search by title' v-model='title_filter'>
+      <button @click="filterEvents()">apply</button>
+    </div>
     <div class='top'></div>
     <table>
       <thead>
@@ -30,9 +41,9 @@
         </tr>
       </tbody>
     </table>
-    <br><br><br>
+    <div class='top'></div>
     <form>
-      <input size=130 placeholder='title' v-model='currentEvent.title'><br><br>
+      <input size=130 placeholder='title' v-model='currentEvent.title'>
       <p><select size=4 placeholder='event type' v-model='currentEvent.event_type'>
       <option disabled>event type</option>
       <option value='call' selected>call</option>
@@ -41,6 +52,7 @@
       </select></p>
       <input placeholder='start date' type=datetime-local v-model='currentEvent.start_date'><br><br>
       <textarea cols='130' rows='8' placeholder='body' v-model='currentEvent.body'></textarea><br><br>
+      <h2 class='status'>{{ status }}</h2>
       <button @click="addEvent()">Add an event</button>
       <button @click="updateEvent(currentEvent)">Update an event</button>
     </form>
@@ -50,7 +62,6 @@
 
 <script>
 // @ is an alias to /src
-// import HelloWorld from '@/components/HelloWorld.vue'
 
 export default {
   name: 'Home',
@@ -61,7 +72,9 @@ export default {
       currentEvent: {},
       api_url: 'http://127.0.0.1:8000/api/events/',
       nextPage: null,
-      prevPage: null
+      prevPage: null,
+      date_filter: 0,
+      title_filter: ''
     }
   },
 
@@ -90,6 +103,18 @@ export default {
       this.nextPage = next
       this.prevPage = previous
       this.setStatus(response, 200)
+    },
+    async filterEvents () {
+      const url = new URL(this.api_url)
+      if (this.date_filter > 0) {
+        url.searchParams.set('start_date', this.date_filter)
+      }
+      this.title_filter.trim()
+      if (this.title_filter) {
+        url.searchParams.set('title', this.title_filter)
+      }
+      // this.filters.forEach(({ key, value }) => url.searchParams.append(key, value))
+      await this.fetchEvents(url)
     },
     async addEvent () {
       const response = await fetch(this.api_url, {
@@ -147,6 +172,11 @@ form {
          font-family: sans-serif;
          letter-spacing: 1px;
 }
+
+select {
+  width: 200px;
+}
+
 td, th{
   padding: 3px 20px;
   margin: 0 10px;
@@ -162,11 +192,17 @@ button {
   margin: 0 5px;
 }
 
-h2 {
+.status {
   color: red;
 }
 
 .top{
-  padding: 20px;
+  padding: 10px;
 }
+
+.filters {
+  align: left;
+  padding: 3px 5px;
+}
+
 </style>
