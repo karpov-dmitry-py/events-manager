@@ -1,4 +1,4 @@
-# Events manager SPA (Django, DRF, Vue.js)
+# Events manager SPA (Django, DRF, PostgreSQL, Vue.js)
 #### Описание:
 - Full stack приложение для управления событиями (CRUD операции).
 - Бэкенд работает на Django, Django Rest Framework и PostgreSQL
@@ -28,5 +28,5 @@
    - установить vue cli
    - запустить дев сервер vue
    
- ##### Скриншот фронт: https://www.screencast.com/t/i3xKgVR5AB4
- ##### Скриншот полученного email-напоминания: https://www.screencast.com/t/oIah7rHM5Owm
+ #### Скриншот фронт: https://www.screencast.com/t/i3xKgVR5AB4
+ #### Скриншот полученного email-напоминания: https://www.screencast.com/t/oIah7rHM5Owm
