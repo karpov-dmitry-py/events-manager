@@ -79,9 +79,9 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'project_db_name',
-        'USER': 'project_db_user',
-        'PASSWORD': 'project_db_pswd',
+        'NAME': 'events_app_db',
+        'USER': 'db_owner_username',
+        'PASSWORD': 'db_owner_password',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -145,6 +145,6 @@ CORS_ORIGIN_WHITELIST = [
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'sender@gmail.com'
-EMAIL_HOST_PASSWORD = 'sender_pswd'
+EMAIL_HOST_PASSWORD = 'sender_password'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
