@@ -78,8 +78,12 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'project_db_name',
+        'USER': 'project_db_user',
+        'PASSWORD': 'project_db_pswd',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
@@ -138,3 +142,9 @@ CORS_ORIGIN_WHITELIST = [
     "http://localhost:8080",
     "http://127.0.0.1:8080",
 ]
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'sender@gmail.com'
+EMAIL_HOST_PASSWORD = 'sender_pswd'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True

@@ -1,19 +1,27 @@
 <template>
   <div>
-    <button :disabled="!prevPage" @click="fetchEvents(prevPage)">Previous</button>
-    <button :disabled="!nextPage" @click="fetchEvents(nextPage)">Next</button>
-    <div class='top'></div>
-    <div class='filters'>
-      <label>Filters:</label>
-      <select class='filters' v-model='date_filter'>
-        <option value=0 selected>all</option>
-        <option value=30>last 30 days</option>
-        <option value=7>last 7 days</option>
-        <option value=1>since yesterday</option>
-     </select>
-      <input class='filters' placeholder='search by title' v-model='title_filter'>
-      <button @click="filterEvents()">apply</button>
-    </div>
+    <form>
+      <input class='filters' placeholder='login' v-model='login'>
+      <input class='filters' type='password' placeholder='password' v-model='password'>
+      <button @click='doLogin()' :disabled='currentUser'>Login</button>
+      <button @click='doLogout()' :disabled='!currentUser'>Logout</button>
+      {{ `Current user: ${currentUser}` }}
+      <div class='top'></div>
+      <button :disabled="!prevPage" @click="fetchEvents(prevPage)">Previous</button>
+      <button :disabled="!nextPage" @click="fetchEvents(nextPage)">Next</button>
+      <div class='top'></div>
+      <div class='filters'>
+        <label>Filters:</label>
+        <select class='filters' v-model='date_filter'>
+          <option value=0 selected>all</option>
+          <option value=30>since last 30 days</option>
+          <option value=7>since last 7 days</option>
+          <option value=1>since yesterday</option>
+       </select>
+        <input class='filters' placeholder='search by title' v-model='title_filter'>
+        <button :disabled="!currentUser" @click="filterEvents()">apply</button>
+      </div>
+    </form>
     <div class='top'></div>
     <table>
       <thead>
@@ -53,8 +61,8 @@
       <input placeholder='start date' type=datetime-local v-model='currentEvent.start_date'><br><br>
       <textarea cols='130' rows='8' placeholder='body' v-model='currentEvent.body'></textarea><br><br>
       <h2 class='status'>{{ status }}</h2>
-      <button @click="addEvent()">Add an event</button>
-      <button @click="updateEvent(currentEvent)">Update an event</button>
+      <button :disabled="!currentUser" @click="addEvent()">Add an event</button>
+      <button :disabled="!currentUser" @click="updateEvent(currentEvent)">Update an event</button>
     </form>
 
   </div>
@@ -67,9 +75,13 @@ export default {
   name: 'Home',
   data () {
     return {
+      login: '',
+      password: '',
+      currentUser: null,
       status: '',
       events: [],
       currentEvent: {},
+      obtain_token_url: 'http://127.0.0.1:8000/api-token-auth/',
       api_url: 'http://127.0.0.1:8000/api/events/',
       nextPage: null,
       prevPage: null,
@@ -79,14 +91,46 @@ export default {
   },
 
   async created () {
-    await this.fetchEvents()
+    if (this.currentUser) {
+      await this.fetchEvents()
+    }
   },
 
   methods: {
+    async doLogin (url = this.obtain_token_url) {
+      const credentials = {
+        username: this.login,
+        password: this.password
+      }
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      })
+      this.setStatus(response, 200)
+      if (response.status === 200) {
+        const { token } = await response.json()
+        this.currentUser = this.login
+        localStorage.setItem(this.login, token)
+        await this.fetchEvents()
+      }
+    },
+    doLogout () {
+      localStorage.removeItem(this.currentUser)
+      this.currentUser = null
+      this.events = []
+    },
+    getAuthToken () {
+      const token = localStorage.getItem(this.currentUser)
+      return `Token ${token}`
+    },
     async setStatus (response, expectedStatus) {
       const { status } = response
       if (status !== expectedStatus) {
-        this.status = `HTTP status: ${status}: ` + JSON.stringify(await response.json())
+        this.status = `Error! HTTP status: ${status}: ` + JSON.stringify(await response.json())
       } else {
         this.status = ''
       }
@@ -95,7 +139,7 @@ export default {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          Authorization: 'Token d38de5854590cd00564e4b0bf4a4b40ec981d336'
+          Authorization: this.getAuthToken()
         }
       })
       const { results, next, previous } = await response.json()
@@ -109,11 +153,10 @@ export default {
       if (this.date_filter > 0) {
         url.searchParams.set('start_date', this.date_filter)
       }
-      this.title_filter.trim()
+      this.title_filter = this.title_filter.replace(/\s/g, '')
       if (this.title_filter) {
         url.searchParams.set('title', this.title_filter)
       }
-      // this.filters.forEach(({ key, value }) => url.searchParams.append(key, value))
       await this.fetchEvents(url)
     },
     async addEvent () {
@@ -122,7 +165,7 @@ export default {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: 'Token d38de5854590cd00564e4b0bf4a4b40ec981d336'
+          Authorization: this.getAuthToken()
         },
         body: JSON.stringify(this.currentEvent)
       })
@@ -136,7 +179,7 @@ export default {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: 'Token d38de5854590cd00564e4b0bf4a4b40ec981d336'
+          Authorization: this.getAuthToken()
         }
       })
       await this.fetchEvents()
@@ -152,7 +195,7 @@ export default {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: 'Token d38de5854590cd00564e4b0bf4a4b40ec981d336'
+          Authorization: this.getAuthToken()
         },
         body: JSON.stringify(this.currentEvent)
       })
@@ -165,7 +208,7 @@ export default {
 
 <style scoped>
 form {
-         width: 1250px;
+         width: 1600px;
          padding: 20px;
          border-radius: 10px;
          box-shadow: 0 4px 16px #ccc;
@@ -203,6 +246,7 @@ button {
 .filters {
   align: left;
   padding: 3px 5px;
+  margin: 10px 5px;
 }
 
 </style>
